@@ -51,7 +51,7 @@
 
   .boutons { display: flex; gap: 14px; justify-content: center; align-items: center; flex-wrap: wrap; }
   .bouton {
-    padding: 14px 28px; border-radius: 999px; font-size: 17px; font-weight: 500;
+    padding: 14px 28px; border-radius: 0; font-size: 17px; font-weight: 500;
     background: var(--bouton); color: var(--bouton-texte); text-decoration: none;
     transition: transform 0.2s ease, opacity 0.2s ease;
   }
@@ -60,7 +60,7 @@
   .lien:hover { opacity: 1; }
 
   .apercu {
-    margin-top: 72px; border-radius: 32px; overflow: hidden; box-shadow: var(--ombre);
+    margin-top: 72px; border-radius: 0; overflow: hidden; box-shadow: var(--ombre);
   }
   .apercu img { display: block; width: 100%; height: auto; }
 
@@ -70,7 +70,7 @@
 
   .etapes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; text-align: left; }
   .etape {
-    background: var(--verre); border: 1px solid var(--bord); border-radius: 26px; padding: 28px;
+    background: var(--verre); border: 1px solid var(--bord); border-radius: 0; padding: 28px;
     backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
     box-shadow: var(--ombre);
   }
@@ -81,7 +81,7 @@
   code { font-family: "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 15px; }
 
   kbd {
-    font-family: inherit; font-size: 0.9em; padding: 2px 10px; border-radius: 10px;
+    font-family: inherit; font-size: 0.9em; padding: 2px 10px; border-radius: 0;
     background: var(--verre); border: 1px solid var(--bord); box-shadow: var(--ombre);
   }
 
