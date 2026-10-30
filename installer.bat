@@ -2,8 +2,8 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 echo.
-echo  Installation de Dictee
-echo  ----------------------
+echo  Installation de Parle
+echo  --------------------
 echo.
 
 rem Cherche Python (lanceur "py" ou "python")
@@ -26,8 +26,8 @@ echo  2/2 Installation des bibliotheques (quelques minutes)...
 .venv\Scripts\python.exe -m pip install -r requirements.txt -q || (echo  Echec de l'installation. & pause & exit /b 1)
 
 echo.
-echo  Installation terminee. Lancement de Dictee...
+echo  Installation terminee. Lancement de Parle...
 echo  Le modele de reconnaissance (environ 500 Mo) se telecharge a la premiere dictee.
 echo.
-start "" ".venv\Scripts\pythonw.exe" "dictee.py"
+start "" ".venv\Scripts\pythonw.exe" "parle.py"
 pause

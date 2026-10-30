@@ -1,5 +1,5 @@
 """
-Dictée vocale pour Windows.
+Parle — dictée vocale pour Windows.
 
 Maintiens Ctrl + Espace, parle, relâche : le texte s'écrit là où se trouve ton curseur.
 La transcription est faite sur ton PC avec Whisper (via faster-whisper), rien n'est envoyé sur internet.
@@ -32,7 +32,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageFo
 # Réglages
 # ---------------------------------------------------------------------------
 
-# Réglages par défaut. Ils sont recopiés dans %APPDATA%\Dictee\config.json
+# Réglages par défaut. Ils sont recopiés dans %APPDATA%\Parle\config.json
 # au premier lancement : c'est ce fichier qu'il faut modifier, pas le code.
 REGLAGES_PAR_DEFAUT = {
     "actif": True,
@@ -48,7 +48,7 @@ SCAN_ESPACE = 57        # codes physiques des touches (indépendants de la langu
 SCAN_CTRL = 29
 SCAN_V = 47
 
-DOSSIER = Path(os.environ["APPDATA"]) / "Dictee"
+DOSSIER = Path(os.environ["APPDATA"]) / "Parle"
 CONFIG = DOSSIER / "config.json"
 JOURNAL = DOSSIER / "erreurs.log"
 
@@ -139,7 +139,7 @@ gdi32.DeleteDC.argtypes = [wintypes.HDC]
 # ---------------------------------------------------------------------------
 
 def journaliser(*infos):
-    """Écrit une erreur dans %APPDATA%\\Dictee\\erreurs.log (l'appli n'a pas de console)."""
+    """Écrit une erreur dans %APPDATA%\\Parle\\erreurs.log (l'appli n'a pas de console)."""
     DOSSIER.mkdir(parents=True, exist_ok=True)
     with JOURNAL.open("a", encoding="utf-8") as f:
         f.write(time.strftime("%d/%m %H:%M:%S ") + "".join(traceback.format_exception(*infos)))
@@ -160,7 +160,7 @@ def lire_config():
 def demarrage_actif():
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, CLE_RUN) as cle:
-            return winreg.QueryValueEx(cle, "Dictee")[0] == COMMANDE
+            return winreg.QueryValueEx(cle, "Parle")[0] == COMMANDE
     except OSError:
         return False
 
@@ -169,10 +169,10 @@ def regler_demarrage(oui):
     """Ajoute ou retire l'appli des programmes lancés avec Windows."""
     with winreg.OpenKey(winreg.HKEY_CURRENT_USER, CLE_RUN, 0, winreg.KEY_SET_VALUE) as cle:
         if oui:
-            winreg.SetValueEx(cle, "Dictee", 0, winreg.REG_SZ, COMMANDE)
+            winreg.SetValueEx(cle, "Parle", 0, winreg.REG_SZ, COMMANDE)
         else:
             try:
-                winreg.DeleteValue(cle, "Dictee")
+                winreg.DeleteValue(cle, "Parle")
             except OSError:
                 pass
 
@@ -324,10 +324,10 @@ class Bulle:
         # Fenêtre Windows native (tkinter ne permet pas la vraie transparence pixel par pixel)
         self.procedure = WNDPROC(lambda h, m, w, l: user32.DefWindowProcW(h, m, w, l))
         classe = WNDCLASSW(lpfnWndProc=self.procedure, hInstance=kernel32.GetModuleHandleW(None),
-                           lpszClassName="DicteeBulle")
+                           lpszClassName="ParleBulle")
         user32.RegisterClassW(ctypes.byref(classe))
         styles = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_NOACTIVATE
-        self.hwnd = user32.CreateWindowExW(styles, "DicteeBulle", "Dictée", WS_POPUP, self.x, self.y,
+        self.hwnd = user32.CreateWindowExW(styles, "ParleBulle", "Parle", WS_POPUP, self.x, self.y,
                                            self.l, self.h, None, None, classe.hInstance, None)
         # La bulle est invisible pour les captures d'écran : on peut ainsi photographier
         # ce qu'il y a derrière elle pour le flouter (effet verre).
@@ -504,7 +504,7 @@ class Bulle:
 # L'application : raccourci clavier, micro, transcription, icône
 # ---------------------------------------------------------------------------
 
-class Dictee:
+class Parle:
     def __init__(self):
         self.config = lire_config()
         self.actif = self.config["actif"]
@@ -535,7 +535,7 @@ class Dictee:
         self.verrou = threading.Lock()
         self.dernier = 0
 
-        self.icone = pystray.Icon("dictee", icone(ICONES["pret"]), "Dictée", menu=pystray.Menu(
+        self.icone = pystray.Icon("parle", icone(ICONES["pret"]), "Parle", menu=pystray.Menu(
             pystray.MenuItem("Activée", self.basculer, checked=lambda i: self.actif),
             pystray.MenuItem("Micro", pystray.Menu(self.menu_micros)),
             pystray.MenuItem("Lancer au démarrage", self.basculer_demarrage, checked=lambda i: demarrage_actif()),
@@ -580,7 +580,7 @@ class Dictee:
         else:
             nom, titre = "pret", "maintenir Ctrl + Espace"
         self.icone.icon = icone(ICONES[nom])
-        self.icone.title = f"Dictée : {titre}"
+        self.icone.title = f"Parle : {titre}"
 
     def quitter(self):
         self.vivant = False
@@ -811,8 +811,8 @@ class Dictee:
 
 if __name__ == "__main__":
     # Empêche de lancer l'appli deux fois
-    kernel32.CreateMutexW(None, False, "DicteeWhisperLocale")
+    kernel32.CreateMutexW(None, False, "ParleWhisperLocale")
     if kernel32.GetLastError() == 183:
         sys.exit()
     ctypes.windll.shcore.SetProcessDpiAwareness(2)
-    Dictee().lancer()
+    Parle().lancer()
