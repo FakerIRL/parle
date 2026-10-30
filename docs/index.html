@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dictée — la dictée vocale pour Windows</title>
+<meta name="description" content="Maintiens Ctrl + Espace, parle, relâche : le texte s'écrit là où se trouve ton curseur. Reconnaissance vocale locale avec Whisper.">
+<style>
+  :root {
+    --fond: #0d0d14;
+    --texte: #ececf2;
+    --doux: #a3a3b5;
+    --verre: rgba(255, 255, 255, 0.06);
+    --bord: rgba(255, 255, 255, 0.12);
+    --accent: #ff453a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--fond);
+    color: var(--texte);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .halo {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(600px 400px at 15% 10%, rgba(120, 60, 220, 0.35), transparent 70%),
+      radial-gradient(700px 450px at 90% 5%, rgba(30, 110, 230, 0.30), transparent 70%),
+      radial-gradient(600px 400px at 60% 100%, rgba(220, 60, 90, 0.22), transparent 70%);
+  }
+  .page { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 28px 0; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; }
+  .point { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+  nav a { color: var(--doux); text-decoration: none; font-size: 15px; }
+  nav a:hover { color: var(--texte); }
+
+  header { text-align: center; padding: 72px 0 48px; }
+  h1 { font-size: clamp(40px, 7vw, 68px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 700; }
+  h1 span { background: linear-gradient(90deg, #c9a8ff, #8ec5ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .accroche { color: var(--doux); font-size: 20px; max-width: 600px; margin: 22px auto 36px; }
+  .touches { display: inline-flex; gap: 6px; align-items: center; color: var(--doux); font-size: 15px; margin-bottom: 36px; }
+  kbd {
+    font-family: inherit; font-size: 14px; padding: 4px 10px; border-radius: 8px;
+    background: var(--verre); border: 1px solid var(--bord); color: var(--texte);
+  }
+  .boutons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .bouton {
+    display: inline-block; padding: 13px 26px; border-radius: 999px; font-weight: 600; font-size: 16px;
+    text-decoration: none; transition: transform 0.15s, background 0.15s;
+  }
+  .bouton:hover { transform: translateY(-1px); }
+  .principal { background: var(--texte); color: #111; }
+  .secondaire { background: var(--verre); border: 1px solid var(--bord); color: var(--texte); backdrop-filter: blur(12px); }
+
+  .apercu { margin: 56px auto 0; border-radius: 22px; overflow: hidden; border: 1px solid var(--bord); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5); }
+  .apercu img { display: block; width: 100%; height: auto; }
+
+  section { padding: 88px 0 0; }
+  h2 { font-size: 32px; letter-spacing: -0.02em; margin-bottom: 10px; }
+  .intro { color: var(--doux); margin-bottom: 36px; max-width: 620px; }
+
+  .grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .carte {
+    background: var(--verre); border: 1px solid var(--bord); border-radius: 18px; padding: 24px;
+    backdrop-filter: blur(16px);
+  }
+  .carte h3 { font-size: 17px; margin-bottom: 6px; }
+  .carte p { color: var(--doux); font-size: 15px; }
+  .numero {
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 14px;
+    background: rgba(255, 255, 255, 0.1); font-weight: 600; font-size: 14px;
+  }
+
+  pre {
+    background: rgba(0, 0, 0, 0.35); border: 1px solid var(--bord); border-radius: 14px;
+    padding: 18px 20px; overflow-x: auto; font-size: 14px; color: #d6d6e2;
+  }
+  code { font-family: "Cascadia Code", Consolas, monospace; }
+  p code, li code { background: rgba(255, 255, 255, 0.08); padding: 1px 6px; border-radius: 6px; font-size: 14px; }
+
+  footer { padding: 96px 0 48px; color: var(--doux); font-size: 14px; text-align: center; }
+  footer a { color: var(--texte); }
+</style>
+</head>
+<body>
+<div class="halo"></div>
+<div class="page">
+
+  <nav>
+    <div class="logo"><div class="point"></div>Dictée</div>
+    <a href="https://github.com/FakerIRL/dictee">Code source sur GitHub</a>
+  </nav>
+
+  <header>
+    <h1>Parle.<br><span>Ton texte s'écrit tout seul.</span></h1>
+    <p class="accroche">Une dictée vocale pour Windows qui fonctionne dans tous tes logiciels. La reconnaissance tourne sur ton PC, sans rien envoyer sur internet.</p>
+    <div class="touches">Maintiens <kbd>Ctrl</kbd> + <kbd>Espace</kbd>, parle, relâche.</div>
+    <div class="boutons">
+      <a class="bouton principal" href="https://github.com/FakerIRL/dictee/archive/refs/heads/main.zip">Télécharger pour Windows</a>
+      <a class="bouton secondaire" href="https://github.com/FakerIRL/dictee#installation">Guide d'installation</a>
+    </div>
+    <div class="apercu"><img src="apercu.png" alt="La bulle de dictée en verre, en bas de l'écran, avec le texte transcrit en direct"></div>
+  </header>
+
+  <section>
+    <h2>Pensée pour aller vite</h2>
+    <p class="intro">Tu parles trois à quatre fois plus vite que tu ne tapes. Dictée enlève tout ce qui se met entre ta voix et ton texte.</p>
+    <div class="grille">
+      <div class="carte"><h3>Partout</h3><p>Discord, navigateur, Word, éditeur de code, jeux en fenêtré : le texte arrive là où se trouve ton curseur.</p></div>
+      <div class="carte"><h3>En direct</h3><p>Une bulle en verre affiche ce que tu dis au fur et à mesure, et le texte est collé une à deux secondes après le relâchement.</p></div>
+      <div class="carte"><h3>Privée</h3><p>Le modèle Whisper d'OpenAI tourne sur ton processeur. Ta voix ne quitte jamais ton ordinateur.</p></div>
+      <div class="carte"><h3>Légère</h3><p>Environ 80 Mo de mémoire au repos. Le modèle n'est chargé que pendant que tu dictes.</p></div>
+    </div>
+  </section>
+
+  <section id="installation">
+    <h2>Installation en trois étapes</h2>
+    <p class="intro">Il faut Windows 10 ou 11 et Python 3.10 ou plus récent.</p>
+    <div class="grille">
+      <div class="carte"><div class="numero">1</div><h3>Installer Python</h3><p>Depuis <a href="https://www.python.org/downloads/" style="color:var(--texte)">python.org</a>. Coche « Add python.exe to PATH » pendant l'installation.</p></div>
+      <div class="carte"><div class="numero">2</div><h3>Télécharger Dictée</h3><p>Récupère le ZIP avec le bouton en haut de cette page, puis décompresse-le où tu veux.</p></div>
+      <div class="carte"><div class="numero">3</div><h3>Lancer l'installation</h3><p>Double-clique sur <code>installer.bat</code>. Quelques minutes plus tard, l'icône apparaît près de l'horloge.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Réglable en une ligne</h2>
+    <p class="intro">Tout se règle dans <code>%APPDATA%\Dictee\config.json</code> : la langue, la taille du modèle, et les mots rares que tu veux voir bien orthographiés.</p>
+<pre><code>{
+  "modele": "small",
+  "langue": "fr",
+  "vocabulaire": "Discord, Kubernetes, Jean-Baptiste",
+  "garder_modele_secondes": 60
+}</code></pre>
+  </section>
+
+  <footer>
+    Projet libre sous licence MIT. Reconnaissance vocale par <a href="https://github.com/openai/whisper">Whisper</a> et <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a>.
+  </footer>
+
+</div>
+</body>
+</html>
