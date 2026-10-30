@@ -1,122 +1,318 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dictée — la dictée vocale pour Windows</title>
-<meta name="description" content="Maintiens Ctrl + Espace, parle, relâche : le texte s'écrit là où se trouve ton curseur. Reconnaissance vocale locale avec Whisper.">
-<style>
-  :root {
-    --fond: #f5f5f7;
-    --texte: #1d1d1f;
-    --doux: #6e6e73;
-    --verre: rgba(255, 255, 255, 0.62);
-    --bord: rgba(255, 255, 255, 0.85);
-    --ombre: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 40px rgba(0, 0, 0, 0.08);
-    --bouton: #1d1d1f;
-    --bouton-texte: #ffffff;
-  }
-  @media (prefers-color-scheme: dark) {
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
+  <title>Dictée — la dictée vocale pour Windows</title>
+  <meta name="description" content="Maintiens Ctrl + Espace, parle, relâche : le texte s'écrit là où se trouve ton curseur. Reconnaissance vocale locale avec Whisper.">
+  <link rel="canonical" href="https://fakerirl.github.io/dictee/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231d1d1f'/%3E%3Crect x='12' y='6' width='8' height='13' fill='%23fff'/%3E%3Cpath d='M9 15v1a7 7 0 0 0 14 0v-1M16 23v4' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Dictée — la dictée vocale pour Windows">
+  <meta property="og:description" content="Maintiens Ctrl + Espace et dicte dans n'importe quel logiciel. Tout se passe sur ton PC.">
+  <meta property="og:url" content="https://fakerirl.github.io/dictee/">
+  <meta property="og:image" content="https://fakerirl.github.io/dictee/apercu.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <style>
     :root {
-      --fond: #000000;
-      --texte: #f5f5f7;
-      --doux: #98989d;
-      --verre: rgba(44, 44, 46, 0.55);
-      --bord: rgba(255, 255, 255, 0.12);
-      --ombre: 0 12px 40px rgba(0, 0, 0, 0.5);
-      --bouton: #f5f5f7;
-      --bouton-texte: #000000;
+      --color-bg: #f5f5f7;
+      --color-text: #1d1d1f;
+      --color-muted: #6e6e73;
+      --color-surface: rgb(255 255 255 / 0.62);
+      --color-border: rgb(255 255 255 / 0.85);
+      --color-button: #1d1d1f;
+      --color-button-text: #fff;
+      --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 40px rgb(0 0 0 / 0.08);
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+      --font-mono: "SF Mono", "Cascadia Code", ui-monospace, Consolas, monospace;
+
+      --space-section: clamp(88px, 14vw, 120px);
+      --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
     }
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
-    background: var(--fond);
-    color: var(--texte);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-  .lumiere {
-    position: fixed; inset: -20% -10% auto; height: 80vh; z-index: -1; pointer-events: none;
-    background:
-      radial-gradient(40% 50% at 30% 40%, rgba(175, 130, 255, 0.28), transparent 70%),
-      radial-gradient(40% 50% at 70% 30%, rgba(100, 170, 255, 0.24), transparent 70%);
-    filter: blur(40px);
-  }
-  main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
 
-  header { text-align: center; padding: 140px 0 64px; }
-  h1 { font-size: clamp(44px, 8vw, 80px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.02; }
-  .accroche { font-size: clamp(19px, 2.4vw, 23px); color: var(--doux); max-width: 520px; margin: 24px auto 40px; letter-spacing: -0.01em; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #000;
+        --color-text: #f5f5f7;
+        --color-muted: #98989d;
+        --color-surface: rgb(44 44 46 / 0.55);
+        --color-border: rgb(255 255 255 / 0.12);
+        --color-button: #f5f5f7;
+        --color-button-text: #000;
+        --shadow: 0 12px 40px rgb(0 0 0 / 0.5);
+      }
+    }
 
-  .boutons { display: flex; gap: 14px; justify-content: center; align-items: center; flex-wrap: wrap; }
-  .bouton {
-    padding: 14px 28px; border-radius: 0; font-size: 17px; font-weight: 500;
-    background: var(--bouton); color: var(--bouton-texte); text-decoration: none;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-  }
-  .bouton:hover { transform: scale(1.03); }
-  .lien { color: var(--texte); text-decoration: none; font-size: 17px; opacity: 0.75; }
-  .lien:hover { opacity: 1; }
+    /* Base */
 
-  .apercu {
-    margin-top: 72px; border-radius: 0; overflow: hidden; box-shadow: var(--ombre);
-  }
-  .apercu img { display: block; width: 100%; height: auto; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  section { padding: 120px 0 0; text-align: center; }
-  h2 { font-size: clamp(30px, 4.5vw, 44px); font-weight: 700; letter-spacing: -0.03em; }
-  .sous { color: var(--doux); font-size: 19px; margin: 12px auto 48px; max-width: 480px; }
+    body {
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      color: var(--color-text);
+      background: var(--color-bg);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
 
-  .etapes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; text-align: left; }
-  .etape {
-    background: var(--verre); border: 1px solid var(--bord); border-radius: 0; padding: 28px;
-    backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
-    box-shadow: var(--ombre);
-  }
-  .etape span { display: block; font-size: 14px; color: var(--doux); margin-bottom: 10px; }
-  .etape h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; margin-bottom: 6px; }
-  .etape p { color: var(--doux); font-size: 16px; }
-  .etape a { color: inherit; }
-  code { font-family: "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 15px; }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -20% -10% auto;
+      z-index: -1;
+      height: 80vh;
+      pointer-events: none;
+      background:
+        radial-gradient(40% 50% at 30% 40%, rgb(175 130 255 / 0.28), transparent 70%),
+        radial-gradient(40% 50% at 70% 30%, rgb(100 170 255 / 0.24), transparent 70%);
+      filter: blur(40px);
+    }
 
-  kbd {
-    font-family: inherit; font-size: 0.9em; padding: 2px 10px; border-radius: 0;
-    background: var(--verre); border: 1px solid var(--bord); box-shadow: var(--ombre);
-  }
+    a {
+      color: inherit;
+    }
 
-  footer { padding: 140px 0 56px; text-align: center; color: var(--doux); font-size: 14px; }
-  footer a { color: var(--doux); }
-</style>
+    :focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 3px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.94em;
+    }
+
+    kbd {
+      padding: 2px 10px;
+      font: inherit;
+      font-size: 0.9em;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow);
+    }
+
+    .container {
+      max-width: 880px;
+      margin-inline: auto;
+      padding-inline: 24px;
+    }
+
+    /* Hero */
+
+    .hero {
+      padding-block: 140px 64px;
+      text-align: center;
+    }
+
+    .hero__title {
+      font-size: clamp(44px, 8vw, 80px);
+      font-weight: 700;
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+    }
+
+    .hero__lead {
+      max-width: 520px;
+      margin: 24px auto 40px;
+      font-size: clamp(19px, 2.4vw, 23px);
+      letter-spacing: -0.01em;
+      color: var(--color-muted);
+    }
+
+    .hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero__preview {
+      margin-top: 72px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero__preview img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Buttons */
+
+    .button {
+      padding: 14px 28px;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--color-button-text);
+      text-decoration: none;
+      background: var(--color-button);
+      transition: transform 0.2s var(--ease);
+    }
+
+    .button:hover {
+      transform: scale(1.03);
+    }
+
+    .link {
+      font-size: 17px;
+      text-decoration: none;
+      opacity: 0.75;
+      transition: opacity 0.2s var(--ease);
+    }
+
+    .link:hover {
+      opacity: 1;
+    }
+
+    /* Sections */
+
+    .section {
+      padding-top: var(--space-section);
+      text-align: center;
+    }
+
+    .section__title {
+      font-size: clamp(30px, 4.5vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .section__lead {
+      max-width: 480px;
+      margin: 12px auto 48px;
+      font-size: 19px;
+      color: var(--color-muted);
+    }
+
+    /* Steps */
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      list-style: none;
+      text-align: left;
+      counter-reset: step;
+    }
+
+    .step {
+      padding: 28px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      counter-increment: step;
+    }
+
+    .step::before {
+      content: "Étape " counter(step);
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: var(--color-muted);
+    }
+
+    .step__title {
+      margin-bottom: 6px;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+
+    .step__text {
+      font-size: 16px;
+      color: var(--color-muted);
+    }
+
+    /* Footer */
+
+    .footer {
+      padding-block: 140px 56px;
+      font-size: 14px;
+      text-align: center;
+      color: var(--color-muted);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="lumiere"></div>
-<main>
+  <main class="container">
+    <header class="hero">
+      <h1 class="hero__title">Parle.<br>Ça s'écrit.</h1>
+      <p class="hero__lead">
+        Maintiens <kbd>Ctrl</kbd> + <kbd>Espace</kbd> et dicte dans n'importe quel logiciel.
+        Tout se passe sur ton PC.
+      </p>
 
-  <header>
-    <h1>Parle.<br>Ça s'écrit.</h1>
-    <p class="accroche">Maintiens <kbd>Ctrl</kbd> + <kbd>Espace</kbd> et dicte dans n'importe quel logiciel. Tout se passe sur ton PC.</p>
-    <div class="boutons">
-      <a class="bouton" href="https://github.com/FakerIRL/dictee/archive/refs/heads/main.zip">Télécharger</a>
-      <a class="lien" href="https://github.com/FakerIRL/dictee">Voir sur GitHub ›</a>
-    </div>
-    <div class="apercu"><img src="apercu.png" alt="La bulle de dictée en verre, en bas de l'écran, avec le texte transcrit en direct"></div>
-  </header>
+      <div class="hero__actions">
+        <a class="button" href="https://github.com/FakerIRL/dictee/archive/refs/heads/main.zip" download>Télécharger</a>
+        <a class="link" href="https://github.com/FakerIRL/dictee">Voir sur GitHub ›</a>
+      </div>
 
-  <section>
-    <h2>Installation</h2>
-    <p class="sous">Windows 10 ou 11. Trois minutes.</p>
-    <div class="etapes">
-      <div class="etape"><span>Étape 1</span><h3>Python</h3><p>Installe-le depuis <a href="https://www.python.org/downloads/">python.org</a> en cochant « Add python.exe to PATH ».</p></div>
-      <div class="etape"><span>Étape 2</span><h3>Dictée</h3><p>Télécharge le ZIP et décompresse-le où tu veux.</p></div>
-      <div class="etape"><span>Étape 3</span><h3>C'est prêt</h3><p>Double-clique sur <code>installer.bat</code>. L'icône apparaît près de l'horloge.</p></div>
-    </div>
-  </section>
+      <figure class="hero__preview">
+        <img
+          src="apercu.png"
+          width="1200"
+          height="560"
+          alt="La bulle de dictée en verre, en bas de l'écran, avec le texte transcrit en direct"
+          fetchpriority="high"
+        >
+      </figure>
+    </header>
 
-  <footer>
-    Licence MIT · Reconnaissance vocale par <a href="https://github.com/openai/whisper">Whisper</a>
+    <section class="section" aria-labelledby="installation">
+      <h2 class="section__title" id="installation">Installation</h2>
+      <p class="section__lead">Windows 10 ou 11. Trois minutes.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <h3 class="step__title">Python</h3>
+          <p class="step__text">
+            Installe-le depuis <a href="https://www.python.org/downloads/">python.org</a>
+            en cochant « Add python.exe to PATH ».
+          </p>
+        </li>
+        <li class="step">
+          <h3 class="step__title">Dictée</h3>
+          <p class="step__text">Télécharge le ZIP et décompresse-le où tu veux.</p>
+        </li>
+        <li class="step">
+          <h3 class="step__title">C'est prêt</h3>
+          <p class="step__text">
+            Double-clique sur <code>installer.bat</code>. L'icône apparaît près de l'horloge.
+          </p>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Licence MIT · Reconnaissance vocale par <a href="https://github.com/openai/whisper">Whisper</a></p>
   </footer>
-
-</main>
 </body>
 </html>
